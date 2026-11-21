@@ -1,1 +1,365 @@
-https://api.aladhan.com/v1/timingsByCity?city='+encodeURIComponent(city)+'&country=Algeria&method=3
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#063b2c">
+<title>رفيق المسلم | Rafiq Al Muslim</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:#071b16;
+  --panel:#102a21;
+  --green:#0b4935;
+  --gold:#e5bd69;
+  --text:#fff8e9;
+  --muted:#b7c8bb;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--text);
+ font-family:'Cairo',sans-serif;
+}
+header{
+ background:linear-gradient(120deg,#063b2c,#10251d);
+ padding:24px 16px;text-align:center;
+ border-bottom:1px solid #b58c45;
+}
+.logo{font-size:29px;color:var(--gold);font-weight:800}
+header p{margin:5px;color:var(--muted);font-size:13px}
+nav{
+ display:flex;overflow-x:auto;gap:8px;padding:12px;
+ background:#0b241b;position:sticky;top:0;z-index:5;
+}
+nav button{
+ flex-shrink:0;background:#18382b;color:white;
+ border:1px solid #36533e;border-radius:20px;
+ padding:9px 15px;font-family:inherit;cursor:pointer;
+}
+nav button.active{background:var(--gold);color:#17251b}
+main{max-width:950px;margin:auto;padding:16px}
+section{display:none}
+section.active{display:block}
+.hero{
+ padding:30px 18px;text-align:center;border-radius:18px;
+ background:linear-gradient(135deg,#0d5139,#102b22);
+ border:1px solid #9b8046;margin-bottom:17px;
+}
+.hero h1{font-size:30px;color:var(--gold);margin:5px}
+.hero p{color:#e2e9df}
+.card{
+ background:var(--panel);border:1px solid #31513e;
+ padding:17px;border-radius:15px;margin:12px 0;
+}
+h2,h3{color:var(--gold)}
+.grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+ gap:10px;
+}
+.prayer{text-align:center}
+.prayer strong{display:block;font-size:21px;color:var(--gold)}
+input,select{
+ width:100%;padding:12px;border-radius:10px;
+ background:#071b16;color:white;border:1px solid #58735d;
+ font-family:inherit;margin:7px 0;
+}
+.action{
+ border:0;background:var(--gold);color:#18251b;
+ padding:11px 18px;border-radius:10px;
+ font-family:inherit;font-weight:bold;cursor:pointer;
+}
+.secondary{background:#244a38;color:white}
+.muted{color:var(--muted);font-size:13px}
+.surah{
+ display:flex;justify-content:space-between;align-items:center;
+ gap:10px;padding:12px;border-bottom:1px solid #31513e;
+}
+.surah button{white-space:nowrap}
+.ayah{
+ text-align:center;font-size:23px;line-height:2.2;
+ padding:20px 5px;border-bottom:1px solid #31513e;
+}
+#count{
+ font-size:55px;color:var(--gold);text-align:center;
+ margin:20px;
+}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">☪ رفيق المسلم</div>
+ <p>رفيقك إلى الطاعة، ودليلك نحو الطمأنينة</p>
+</header>
+
+<nav>
+ <button class="active" onclick="showPage('home',this)">الرئيسية</button>
+ <button onclick="showPage('prayer',this)">مواقيت الصلاة</button>
+ <button onclick="showPage('quran',this)">القرآن الكريم</button>
+ <button onclick="showPage('ramadan',this)">رمضان</button>
+ <button onclick="showPage('azkar',this)">الأذكار</button>
+ <button onclick="showPage('tasbih',this)">السبحة</button>
+ <button onclick="showPage('qibla',this)">القبلة</button>
+</nav>
+
+<main>
+
+<section id="home" class="active">
+ <div class="hero">
+  <div style="font-size:48px">🌙</div>
+  <h1>أهلاً بك في رفيق المسلم</h1>
+  <p>ابدأ يومك بذكر الله واجعل القرآن رفيق قلبك.</p>
+  <div id="today"></div>
+ </div>
+
+ <div class="card">
+  <h3>🕌 الصلاة القادمة</h3>
+  <div id="nextPrayer">جاري تحميل مواقيت الصلاة...</div>
+ </div>
+
+ <div class="grid">
+  <div class="card prayer">📖<strong>القرآن</strong><span class="muted">اقرأ واستمع</span></div>
+  <div class="card prayer">🤲<strong>الأذكار</strong><span class="muted">اذكر الله</span></div>
+  <div class="card prayer">📿<strong>التسبيح</strong><span class="muted">سبحتك اليومية</span></div>
+  <div class="card prayer">🌙<strong>رمضان</strong><span class="muted">الإمساك والإفطار</span></div>
+ </div>
+</section>
+
+<section id="prayer">
+ <div class="card">
+  <h2>🕌 مواقيت الصلاة</h2>
+  <label>المدينة</label>
+  <input id="city" value="Djelfa" placeholder="اكتب المدينة">
+  <label>الدولة</label>
+  <input id="country" value="Algeria">
+  <button class="action" onclick="loadPrayer()">تحديث المواقيت</button>
+  <p id="prayerDate" class="muted"></p>
+ </div>
+ <div class="grid" id="prayerGrid">
+  <div class="card">جاري تحميل المواقيت...</div>
+ </div>
+</section>
+
+<section id="quran">
+ <div class="card">
+  <h2>📖 القرآن الكريم</h2>
+  <p class="muted">اختر سورة لقراءة آياتها والاستماع إليها.</p>
+  <input id="searchSurah" placeholder="ابحث عن سورة..." oninput="filterSurahs()">
+  <div id="surahList">جاري تحميل السور...</div>
+ </div>
+ <div id="reader" class="card" style="display:none">
+  <h2 id="surahTitle"></h2>
+  <div id="ayahs"></div>
+  <audio id="audio" controls style="width:100%;margin-top:15px"></audio>
+ </div>
+</section>
+
+<section id="ramadan">
+ <div class="hero">
+  <div style="font-size:42px">🌙</div>
+  <h1>رمضان المبارك</h1>
+  <p>اللهم بلغنا رمضان وأعنا على صيامه وقيامه.</p>
+ </div>
+ <div class="card">
+  <h2>مواقيت الصيام</h2>
+  <p class="muted">تعتمد هذه الأوقات على مواقيت المدينة المحددة في قسم الصلاة.</p>
+  <div class="grid">
+   <div class="card prayer">
+    <h3>🌅 الإمساك التقريبي</h3>
+    <strong id="imsak">--:--</strong>
+    <p class="muted">قبل الفجر بعشر دقائق</p>
+   </div>
+   <div class="card prayer">
+    <h3>🌇 الإفطار</h3>
+    <strong id="iftar">--:--</strong>
+    <p class="muted">وقت المغرب</p>
+   </div>
+  </div>
+  <p class="muted">تحقق من التوقيت الرسمي المحلي، خصوصاً في رمضان.</p>
+ </div>
+</section>
+
+<section id="azkar">
+ <div class="card">
+  <h2>🤲 الأذكار والأدعية</h2>
+  <div id="azkarList"></div>
+ </div>
+</section>
+
+<section id="tasbih">
+ <div class="card" style="text-align:center">
+  <h2>📿 السبحة الإلكترونية</h2>
+  <p>سبحان الله وبحمده</p>
+  <div id="count">0</div>
+  <button class="action" onclick="increase()">تسبيح</button>
+  <button class="action secondary" onclick="resetCount()">إعادة التصفير</button>
+ </div>
+</section>
+
+<section id="qibla">
+ <div class="card">
+  <h2>🧭 اتجاه القبلة</h2>
+  <p>اتجاه القبلة التقريبي من مدينة الجلفة.</p>
+  <div style="text-align:center;font-size:65px;margin:25px">🕋</div>
+  <h2 style="text-align:center">حوالي 104° من الشمال</h2>
+  <p class="muted">هذه قيمة تقريبية. استخدم بوصلة موثوقة واضبطها بعيداً عن المعادن والأجهزة المغناطيسية.</p>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ رفيق المسلم © 2026
+ <br>اللهم اجعل هذا العمل نافعاً وخالصاً لوجهك الكريم.
+</footer>
+
+<script>
+const prayerNames = {
+ Fajr:"الفجر", Sunrise:"الشروق", Dhuhr:"الظهر",
+ Asr:"العصر", Maghrib:"المغرب", Isha:"العشاء"
+};
+
+function showPage(id,button){
+ document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+ button.classList.add('active');
+}
+
+document.getElementById('today').textContent =
+ new Date().toLocaleDateString('ar-DZ',{dateStyle:'full'});
+
+let timings={};
+
+function cleanTime(t){
+ return t ? t.split(' ')[0] : '--:--';
+}
+
+async function loadPrayer(){
+ const city=document.getElementById('city').value.trim();
+ const country=document.getElementById('country').value.trim();
+ if(!city || !country){alert('اكتب المدينة والدولة');return;}
+ document.getElementById('prayerGrid').innerHTML='<div class="card">جاري التحميل...</div>';
+ try{
+  const url=`https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=3`;
+  const response=await fetch(url);
+  const result=await response.json();
+  if(result.code!==200) throw new Error();
+  timings=result.data.timings;
+  document.getElementById('prayerDate').textContent=
+   'التاريخ الهجري: '+result.data.date.hijri.date;
+  document.getElementById('prayerGrid').innerHTML=
+   Object.entries(prayerNames).map(([key,name])=>
+    `<div class="card prayer">${name}<strong>${cleanTime(timings[key])}</strong></div>`
+   ).join('');
+  document.getElementById('imsak').textContent=minusTen(timings.Fajr);
+  document.getElementById('iftar').textContent=cleanTime(timings.Maghrib);
+  updateNext();
+ }catch(e){
+  document.getElementById('prayerGrid').innerHTML=
+   '<div class="card">تعذر تحميل المواقيت. تحقق من الإنترنت واسم المدينة.</div>';
+ }
+}
+
+function minusTen(t){
+ if(!t)return '--:--';
+ let [h,m]=cleanTime(t).split(':').map(Number);
+ let d=new Date();d.setHours(h,m-10,0,0);
+ return d.toTimeString().slice(0,5);
+}
+
+function updateNext(){
+ const keys=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+ const now=new Date();
+ let next=keys.find(k=>{
+  let [h,m]=cleanTime(timings[k]).split(':').map(Number);
+  return h*60+m>now.getHours()*60+now.getMinutes();
+ });
+ if(!next) next='Fajr';
+ document.getElementById('nextPrayer').innerHTML=
+  `<h2>${prayerNames[next]}</h2><strong style="font-size:28px;color:var(--gold)">${cleanTime(timings[next])}</strong>`;
+}
+
+let allSurahs=[];
+
+async function loadQuran(){
+ try{
+  const r=await fetch('https://api.alquran.cloud/v1/surah');
+  const j=await r.json();
+  if(j.code!==200)throw new Error();
+  allSurahs=j.data;
+  renderSurahs(allSurahs);
+ }catch(e){
+  document.getElementById('surahList').textContent='تعذر تحميل السور. تحقق من الإنترنت.';
+ }
+}
+
+function renderSurahs(list){
+ document.getElementById('surahList').innerHTML=list.map(s=>
+ `<div class="surah">
+  <div><b>${s.number}. ${s.name}</b><br><small class="muted">${s.revelationType==='Meccan'?'مكية':'مدنية'} • ${s.numberOfAyahs} آية</small></div>
+  <button class="action" onclick="openSurah(${s.number})">قراءة</button>
+ </div>`).join('');
+}
+
+function filterSurahs(){
+ const q=document.getElementById('searchSurah').value.trim();
+ renderSurahs(allSurahs.filter(s=>s.name.includes(q)||String(s.number)===q));
+}
+
+async function openSurah(n){
+ const reader=document.getElementById('reader');
+ reader.style.display='block';
+ document.getElementById('surahTitle').textContent='جاري تحميل السورة...';
+ document.getElementById('ayahs').innerHTML='';
+ try{
+  const r=await fetch(`https://api.alquran.cloud/v1/surah/${n}`);
+  const j=await r.json();
+  document.getElementById('surahTitle').textContent=j.data.name;
+  document.getElementById('ayahs').innerHTML=j.data.ayahs.map(a=>
+   `<div class="ayah">${a.text} <span style="color:var(--gold)">۞ ${a.numberInSurah}</span></div>`
+  ).join('');
+  document.getElementById('audio').src=`https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${n}.mp3`;
+  reader.scrollIntoView({behavior:'smooth'});
+ }catch(e){
+  document.getElementById('surahTitle').textContent='تعذر تحميل السورة.';
+ }
+}
+
+const azkar=[
+ ['أذكار الصباح والمساء','أصبحنا وأصبح الملك لله، والحمد لله، لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير.'],
+ ['التسبيح','سبحان الله وبحمده، سبحان الله العظيم.'],
+ ['الاستغفار','أستغفر الله العظيم وأتوب إليه.'],
+ ['الصلاة على النبي ﷺ','اللهم صل وسلم على نبينا محمد.'],
+ ['دعاء','اللهم أعني على ذكرك وشكرك وحسن عبادتك.'],
+ ['دعاء','ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار.']
+];
+
+document.getElementById('azkarList').innerHTML=azkar.map((z,i)=>
+ `<div class="card"><h3>${z[0]}</h3><p style="line-height:2">${z[1]}</p><button class="action secondary" onclick="copyZikr(${i})">نسخ الذكر</button></div>`
+).join('');
+
+function copyZikr(i){
+ if(navigator.clipboard)navigator.clipboard.writeText(azkar[i][1]).then(()=>alert('تم نسخ الذكر'));
+ else alert(azkar[i][1]);
+}
+
+let count=0;
+function increase(){
+ count++;
+ document.getElementById('count').textContent=count;
+}
+function resetCount(){
+ count=0;
+ document.getElementById('count').textContent=count;
+}
+
+loadPrayer();
+loadQuran();
+</script>
+</body>
+</html>
+
